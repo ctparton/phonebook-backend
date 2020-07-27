@@ -1,0 +1,26 @@
+{
+  "name": "phonebook-backend",
+  "version": "1.0.0",
+  "description": "A backend for the full stack open phonebook in part 2",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ctparton/fso-backend.git"
+  },
+  "author": "Callum Parton",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ctparton/fso-backend/issues"
+  },
+  "homepage": "https://github.com/ctparton/fso-backend#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}

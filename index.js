@@ -12,13 +12,6 @@ app.use(express.json())
 morgan.token('body', req => JSON.stringify(req.body))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
-let persons = [
-    {
-        name: "Callum",
-        number: "078050500",
-        id: 1
-    }
-]
 app.get('/', (request, response ) => {
     response.send('<p>Hello World</p>')
 })

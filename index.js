@@ -2,6 +2,7 @@ const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
 const { response } = require('express')
+const Person = require('./models/person')
 
 const app = express()
 app.use(express.static('build'))
@@ -22,51 +23,78 @@ app.get('/', (request, response ) => {
     response.send('<p>Hello World</p>')
 })
 
-app.get('/api/persons/:id', (request, response) => {
-    id = Number(request.params.id) // Converted to number for comparisons
-    contact = persons.find(person => person.id === id)
-    if (contact) {
-        response.json(contact)
-    } else {
-        response.status(404).end()
-    }
+app.get('/api/persons/:id', (request, response, next) => {
+    Person.findById(request.params.id)
+        .then(person => {
+            if (person) {
+                response.json(person)
+            } else {
+                response.status(404).end()
+            }
+        })
+        .catch(error => {
+            console.log(error)
+            next(error)
+        })
 
 })
 app.get('/api/persons', (request, response) => {
-    response.json(persons)
+    Person.find({}).then(persons => {
+        response.json(persons)
+    })
 })
 
 app.get('/info', (request, response) => {
-    response.send(`<p>Phonebook currently has ${persons.length} contacts as of <br /> ${new Date()}</p>`)
+    Person.find({}).then(person => {
+        response
+        .send(`<p>Phonebook currently has ${person.length} contacts as of <br /> ${new Date()}</p>`)})
 })
 
+
 app.delete('/api/persons/:id', (request, response) => {
-    id = Number(request.params.id)
-    persons = persons.filter(person => person.id !== id)
-    response.status(204).end()
+    Person.findByIdAndDelete(request.params.id).then(result => {
+        response.status(204).end()
+    })
+    
 })
 
 app.post('/api/persons', (request, response) => {
-    const generateId = () => {
-        min = Math.ceil(0);
-        max = Math.floor(persons.length * 5000);
-        return Math.floor(Math.random() * (max - min)) + min;
-    }
     const body = request.body
     if (!body.name || !body.number) {
-        return response.status(400).json({
-            error: "request body must contain name and number"
-        })
-    } else if (persons.find(person => person.name === body.name)) {
-        return response.status(400).json({
-            error: `Contact named ${body.name} already exists in phonebook`
-        })
+            return response.status(400).json({
+                error: "request body must contain name and number"
+    })
     }
-    const newContact = {...body, id: generateId()}
-    persons = persons.concat(newContact)
-    response.json(newContact)
-
+    const person = new Person({
+        name: body.name,
+        number: body.number
+    })
+    person.save().then(result => response.json(result)) 
 })
+
+app.put('/api/persons/:id', (request, response, next) => {
+    const body = request.body
+    const person = {
+        name: body.name,
+        number: body.number
+    }
+    Person.findByIdAndUpdate(request.params.id, person, {new: true})
+        .then(result => {
+            console.log(`Contact named ${body.name} already exists in phonebook`)
+            response.json(result)
+        })
+        .catch(error => next(error))
+})
+
+const errorHandler = (error, request, response, next) => {
+    console.log(error)
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' })
+      } 
+    next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 

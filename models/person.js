@@ -1,6 +1,8 @@
 require('dotenv').config()
 const mongoose = require('mongoose')
+const uniqueValidator = require('mongoose-unique-validator')
 mongoose.set('useFindAndModify', false)
+mongoose.set('useCreateIndex', true);
 
 const conn = process.env.MONGO_URI
 
@@ -11,9 +13,11 @@ mongoose
     .catch(error => console.log(`${error} connection unsuccessful`))
 
 const personSchema = new mongoose.Schema({
-  name: String,
-  number: Number
+  name: {type: String, minlength: 3, unique: true},
+  number: {type: String, required: true, minlength: 8}
 })
+
+personSchema.plugin(uniqueValidator)
 
 personSchema.set('toJSON', {
     transform: (document, returnedObject)  => {
